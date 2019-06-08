@@ -7,4 +7,6 @@ import airDataBackendService.util.Box;
 
 public interface MeasurementRepositoryCustom {
   public List<Measurement> customQuery(int limit, int offset, Box box, Date maxage);
+
+  public List<Sensor> getSensors();
 }

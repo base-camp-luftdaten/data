@@ -27,12 +27,9 @@ public class MeasurementRepositoryCustomImpl implements MeasurementRepositoryCus
     operations.add(Aggregation.match(Criteria.where("timestamp").gte(maxage)));
 
     if (box != null) {
-      operations.add(Aggregation.match(new Criteria().andOperator(
-            Criteria.where("lat").gte(box.getLat1()),
-            Criteria.where("lat").lte(box.getLat2()),
-            Criteria.where("lon").gte(box.getLon1()),
-            Criteria.where("lon").lte(box.getLon2()))
-      ));
+      operations.add(Aggregation.match(
+          new Criteria().andOperator(Criteria.where("lat").gte(box.getLat1()), Criteria.where("lat").lte(box.getLat2()),
+              Criteria.where("lon").gte(box.getLon1()), Criteria.where("lon").lte(box.getLon2()))));
     }
 
     // operations.add(Aggregation.group("sensorId").avg("p25").as("P25"));
@@ -43,5 +40,12 @@ public class MeasurementRepositoryCustomImpl implements MeasurementRepositoryCus
     Aggregation agg = Aggregation.newAggregation(operations);
 
     return mongoTemplate.aggregate(agg, Measurement.class, Measurement.class).getMappedResults();
+  }
+
+  @Override
+  public List<Sensor> getSensors() {
+    return mongoTemplate.aggregate(
+        Aggregation.newAggregation(Aggregation.group("sensorId").last("lon").as("lon").last("lat").as("lat")),
+        Measurement.class, Sensor.class).getMappedResults();
   }
 }

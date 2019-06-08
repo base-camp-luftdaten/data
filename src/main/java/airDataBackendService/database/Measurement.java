@@ -15,17 +15,17 @@ public class Measurement {
 
   @Field("sensor_id")
   public String sensorId;
-  
+
   @Field("sensor_type")
   public String sensorType;
-  
+
   public double lat;
   public double lon;
-  
+
   @DateTimeFormat
   @Field("timestamp")
   public Date timestamp;
-  
+
   @Field("P10")
   public double p10;
 
