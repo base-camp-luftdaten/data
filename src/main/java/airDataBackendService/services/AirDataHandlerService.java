@@ -4,8 +4,8 @@ import airDataBackendService.database.Measurement;
 import airDataBackendService.database.Sensor;
 import airDataBackendService.database.MeasurementRepository;
 import airDataBackendService.util.Box;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+// import org.slf4j.Logger;
+// import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,7 +19,8 @@ import java.util.List;
 
 @Component
 public class AirDataHandlerService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AirDataHandlerService.class);
+    // private static final Logger LOGGER =
+    // LoggerFactory.getLogger(AirDataHandlerService.class);
 
     @Autowired
     private MeasurementRepository measurementRepository;
