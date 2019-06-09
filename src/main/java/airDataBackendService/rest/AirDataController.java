@@ -46,4 +46,10 @@ public class AirDataController {
 
         return map;
     }
+
+    @GetMapping(value = "bySensor", produces = "application/json")
+    public List<Measurement> getMeasurementsBySensor(@RequestParam(value = "sensor", required = true) String sensor,
+            @RequestParam(value = "timestamp", required = true) long timestamp) {
+        return airDataHandlerService.getBySensor(sensor, timestamp);
+    }
 }

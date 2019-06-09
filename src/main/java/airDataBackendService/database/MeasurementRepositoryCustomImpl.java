@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
 import airDataBackendService.database.Measurement;
 import airDataBackendService.util.Box;
@@ -48,4 +49,21 @@ public class MeasurementRepositoryCustomImpl implements MeasurementRepositoryCus
         Aggregation.newAggregation(Aggregation.group("sensorId").last("lon").as("lon").last("lat").as("lat")),
         Measurement.class, Sensor.class).getMappedResults();
   }
+
+  // @Override
+  // public List<Measurement> getBySensor(String sensor, int timestamp) {
+  // long startTime = System.nanoTime();
+
+  // List<Measurement> result = mongoTemplate.find(
+  // Query.query(Criteria.where("sensorId").is(sensor).and("timestamp").gte(timestamp
+  // - 10 * 60 * 1000)),
+  // Measurement.class);
+
+  // long endTime = System.nanoTime();
+  // long duration = (endTime - startTime) / 1000000;
+
+  // System.out.println("/bySensor took " + duration + " ms!");
+
+  // return result;
+  // }
 }

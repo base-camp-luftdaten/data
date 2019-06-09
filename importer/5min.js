@@ -14,8 +14,11 @@ cron.schedule('*/2 * * * *', () => {
       const records = await cleanMeasurements(latest, `latest-${now.getTime()}`);
 
       try {
-        await collection.insertMany(records, { ordered: false });
+        /** @type {import('mongodb').InsertWriteOpResult} */
+        const res = await collection.insertMany(records, { ordered: false });
+        console.log(`    Inserted ${res.insertedCount} new entries`);
       } catch (err) {
+        console.log(`    Inserted ${err.result.result.nInserted} new entries`);
         let duplicatedIds = 0;
         err.writeErrors.forEach(error => {
           if (error.code === 11000) {

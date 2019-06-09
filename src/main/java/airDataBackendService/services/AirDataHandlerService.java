@@ -67,4 +67,11 @@ public class AirDataHandlerService {
         return measurementRepository.getSensors();
     }
 
+    public List<Measurement> getBySensor(String sensor, long timestamp) {
+        Date from = new Date((timestamp * 1000) - 10 * 60 * 1000);
+        Date to = new Date((timestamp * 1000) + 10 * 60 * 1000);
+
+        return measurementRepository.getBySensor(sensor, from, to);
+    }
+
 }

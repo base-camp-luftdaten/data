@@ -62,27 +62,34 @@ function processSequentially(promises) {
 }
 
 async function getEntireDay(dateString) {
-  const html = await downloadFromArchive(dateString);
-  const csvFiles = getCSVFiles(html);
-  /** @type {Array<Array<string>>} */
-  const fileChunks = chunkArray(csvFiles, 50);
+  let dbClient;
 
-  // open db connection
-  const [client, collection] = await connectToCollection();
+  try {
+    const html = await downloadFromArchive(dateString);
+    const csvFiles = getCSVFiles(html);
+    /** @type {Array<Array<string>>} */
+    const fileChunks = chunkArray(csvFiles, 50);
 
-  const batchedFunctions = fileChunks.map(function(chunk) {
-    return function() {
-      const processes = chunk.map(function(fileName) {
-        return processFile(fileName, dateString, collection);
-      });
-      return Promise.all(processes);
-    };
-  });
+    // open db connection
+    const [client, collection] = await connectToCollection();
+    dbClient = client;
 
-  // Send off 50 requests at once, then wait until they're done before starting the next 50
-  await processSequentially(batchedFunctions);
+    const batchedFunctions = fileChunks.map(function(chunk) {
+      return function() {
+        const processes = chunk.map(function(fileName) {
+          return processFile(fileName, dateString, collection);
+        });
+        return Promise.all(processes);
+      };
+    });
 
-  client.close();
+    // Send off 50 requests at once, then wait until they're done before starting the next 50
+    await processSequentially(batchedFunctions);
+  } catch (err) {
+    console.error(err);
+  }
+
+  await dbClient.close();
 }
 
 /**
