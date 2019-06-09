@@ -20,7 +20,7 @@ function restructure(measurement) {
   result.P1 = (measurement.sensordatavalues.find(isP1) || fallBackObject).value;
   result.P2 = (measurement.sensordatavalues.find(isP2) || fallBackObject).value;
   result.timestamp = measurement.timestamp.replace(/ /, 'T');
-  result.sensor_id = measurement.sensor.id;
+  result.sensor_id = String(measurement.sensor.id);
   result.sensor_type = measurement.sensor.sensor_type.name;
   result.lat = measurement.location.latitude;
   result.lon = measurement.location.longitude;

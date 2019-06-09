@@ -4,7 +4,6 @@
  * @type {(url: string | Request, init?: RequestInit) => Promise<Response>}
  */
 // @ts-ignore
-const fetch = require('node-fetch');
 const { downloadFromArchive, downloadPlain } = require('./downloader');
 const { getCSVFiles } = require('./getCSVFiles');
 const { chunkArray } = require('./utils');
@@ -42,7 +41,9 @@ function processFile(fileName, dateString, dbCollection) {
           resolve();
         })
         .catch(err => {
-          console.log(`Got "${err.message}" when trying to write ${url} into database`);
+          if (err.code !== 11000) {
+            console.log(`Got "${err.message}" when trying to write ${url} into database`);
+          }
         });
     } catch (err) {
       console.error(`An error occured while processing ${url}:\n${err}\nNotice: this did not stop the processing of the current set of CSV files\n\n`);
@@ -68,7 +69,7 @@ async function getEntireDay(dateString) {
     const html = await downloadFromArchive(dateString);
     const csvFiles = getCSVFiles(html);
     /** @type {Array<Array<string>>} */
-    const fileChunks = chunkArray(csvFiles, 50);
+    const fileChunks = chunkArray(csvFiles, 1);
 
     // open db connection
     const [client, collection] = await connectToCollection();
@@ -83,7 +84,7 @@ async function getEntireDay(dateString) {
       };
     });
 
-    // Send off 50 requests at once, then wait until they're done before starting the next 50
+    // Send off x requests at once, then wait until they're done before starting the next x requests
     await processSequentially(batchedFunctions);
   } catch (err) {
     console.error(err);
