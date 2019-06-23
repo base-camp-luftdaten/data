@@ -4,7 +4,6 @@
  * @type {(url: string | Request, init?: RequestInit) => Promise<Response>}
  */
 // @ts-ignore
-const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 const { downloadFromArchive, downloadPlain } = require('./downloader');
 const { getCSVFiles } = require('./getCSVFiles');
