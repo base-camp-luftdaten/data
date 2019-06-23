@@ -27,13 +27,7 @@ function processFile(fileName, dateString, dbCollection) {
 
   return new Promise(async resolve => {
     try {
-      let rawText;
-      try {
-        rawText = await downloadPlain(url);
-      } catch (err) {
-        console.log('no, here');
-        console.log(err);
-      }
+      const rawText = await downloadPlain(url);
       const measurements = await parseCSV(rawText, {
         delimiter: ';',
         columns: true,
@@ -74,13 +68,7 @@ async function getEntireDay(dateString) {
   let dbClient;
 
   try {
-    let html;
-    try {
-      html = await downloadFromArchive(dateString);
-    } catch (err) {
-      console.log('hier');
-      console.log(err);
-    }
+    const html = await downloadFromArchive(dateString);
     const csvFiles = getCSVFiles(html);
     /** @type {Array<Array<string>>} */
     const fileChunks = chunkArray(csvFiles, 1);
