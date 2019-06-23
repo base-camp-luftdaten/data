@@ -73,3 +73,9 @@ Result:
   }
 ]
 ```
+
+## Deployment
+
+```sh
+rsync -avz importer/ username@server:/srv/data/luftdaten19
+```

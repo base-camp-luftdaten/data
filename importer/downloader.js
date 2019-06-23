@@ -15,7 +15,7 @@ async function downloadLatest() {
 }
 
 async function downloadPlain(url) {
-  const response = await fetch(url);
+  const response = await fetch(url, { timeout: 1000 * 60 * 2 });
   return await response.text();
 }
 
@@ -26,7 +26,7 @@ async function downloadPlain(url) {
  * @throws Throws if page couldn't be downloaded
  */
 async function downloadFromArchive(dateString) {
-  const res = await fetch(`https://archive.luftdaten.info/${dateString}/`);
+  const res = await fetch(`https://archive.luftdaten.info/${dateString}/`, { timeout: 1000 * 60 * 2 });
 
   if (res.status !== 200) {
     throw new Error(`Error while trying to get measurements from https://archive.luftdaten.info/${dateString}/\nStatus code: ${res.status}`);
