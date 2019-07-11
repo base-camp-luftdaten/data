@@ -13,6 +13,7 @@ const { connectToCollection } = require('./database');
 const { zeroPad } = require('./utils');
 const { parseCSV } = require('./utils');
 const fs = require('fs');
+const logger = require('./logger');
 
 // uh oh, global state
 let addedMeasurements = 0;
@@ -157,8 +158,10 @@ if (singleDay) {
   console.log(`--- Downloading latest measurements from https://archive.luftdaten.info (${startDate}) ---`);
   getEntireDay(startDate)
     .then(() => {
-      console.log(`--- Added ${addedMeasurements} new measurements to the database ---`);
-      console.log(`--- Total time: ${Math.floor((new Date().getTime() - before.getTime()) / 1000)} seconds---`);
+      logger.log(
+        `--- Added ${addedMeasurements} new measurements to the database (day ${startDate}) ---`,
+        `--- Total time: ${Math.floor((new Date().getTime() - before.getTime()) / 1000)} seconds---`
+      );
     })
     .catch(console.error);
 } else {
@@ -189,8 +192,10 @@ if (singleDay) {
         addedMeasurements = 0;
         try {
           await getEntireDay(date);
-          console.log(`--- Added ${addedMeasurements} new measurements to the database ---`);
-          console.log(`--- Total time: ${Math.floor((new Date().getTime() - before.getTime()) / 1000)} seconds---`);
+          logger.log(
+            `--- Added ${addedMeasurements} new measurements to the database (day: ${date}) ---`,
+            `--- Total time: ${Math.floor((new Date().getTime() - before.getTime()) / 1000)} seconds---`
+          );
 
           fs.writeFile('./latest', date, function(err) {
             if (err) {
