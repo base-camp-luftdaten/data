@@ -6,7 +6,7 @@ const { WEBHOOK_URL } = process.env;
 
 const logger = {
   log(...args) {
-    if (WEBHOOK_URL === undefined) return console.log(args);
+    if (WEBHOOK_URL === undefined) return console.log(...args);
 
     fetch(WEBHOOK_URL, {
       method: 'POST',

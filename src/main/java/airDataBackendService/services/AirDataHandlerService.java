@@ -5,6 +5,7 @@ import airDataBackendService.database.Sensor;
 import airDataBackendService.database.SensorRepository;
 import airDataBackendService.database.MeasurementRepository;
 import airDataBackendService.util.Box;
+import airDataBackendService.rest.BySensorResponse;
 // import org.slf4j.Logger;
 // import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,8 +72,52 @@ public class AirDataHandlerService {
         return sensorRepository.findAll();
     }
 
-    public List<Measurement> getBySensor(String sensor, long timestamp) {
-        return measurementRepository.getBySensor(sensor, timestamp);
+    private boolean hasMeasurementWithinTimestampWithOffset(List<Measurement> measurements, long timestampInSeconds,
+            long offsetInSeconds) {
+        for (Measurement m : measurements) {
+            if (Math.abs(m.timestamp - timestampInSeconds) <= offsetInSeconds) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isContinuous(List<Measurement> measurements, long startTimeInSeconds) {
+        long endTimeInSeconds = startTimeInSeconds - 7 * 24 * 60 * 60;
+        long offsetInSeconds = 3 * 60 * 60;// 3 hours in seconds
+
+        for (long i = startTimeInSeconds; i >= endTimeInSeconds; i -= 60 * 60) {
+            if (!this.hasMeasurementWithinTimestampWithOffset(measurements, i, offsetInSeconds)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private Measurement bestFit(List<Measurement> measurements, long timestamp) {
+        Measurement result = new Measurement();
+        result.timestamp = Long.MAX_VALUE;
+
+        for (Measurement m : measurements) {
+            if (Math.abs(result.timestamp - timestamp) > Math.abs(m.timestamp - timestamp)) {
+                result = m;
+            }
+        }
+
+        return result;
+    }
+
+    public BySensorResponse getBySensor(String sensor, long timestamp) {
+        // retrieve all relevant measurements from the database
+        List<Measurement> allMeasurements = measurementRepository.getBySensor(sensor, timestamp);
+
+        BySensorResponse response = new BySensorResponse();
+        response.continuous = this.isContinuous(allMeasurements, timestamp);
+        if (response.continuous) {
+            response.measurement = this.bestFit(allMeasurements, timestamp);
+        }
+        return response;
     }
 
 }
