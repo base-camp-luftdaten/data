@@ -11,7 +11,7 @@ To inspect the MongoDB database using a GUI, I recommend [Robo 3T](https://robom
 Finally, to compile and run the Java backend, run:
 
 ```sh
-mvn package && java -jar target/AirDataBackendService-0.0.1-SNAPSHOT.jar
+mvn clean package && java -jar target/AirDataBackendService.war
 ```
 
 ## REST Endpoints

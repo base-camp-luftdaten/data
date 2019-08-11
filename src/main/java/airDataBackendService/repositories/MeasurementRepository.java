@@ -1,10 +1,10 @@
-package airDataBackendService.database;
+package airDataBackendService.repositories;
 
-import java.util.Date;
-import java.util.List;
+// import java.util.Date;
+// import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
+// import org.springframework.data.mongodb.repository.Query;
 
 import airDataBackendService.database.Measurement;
 
