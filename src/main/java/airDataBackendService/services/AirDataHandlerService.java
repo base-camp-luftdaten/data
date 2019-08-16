@@ -5,15 +5,23 @@ import airDataBackendService.database.Measurement;
 import airDataBackendService.database.Sensor;
 import airDataBackendService.repositories.MeasurementRepository;
 import airDataBackendService.repositories.SensorRepository;
+import airDataBackendService.rest.AirDataAPIResult;
 import airDataBackendService.rest.BySensorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
 @Component
 public class AirDataHandlerService {
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Autowired
     private WeatherDataService weatherDataService;
@@ -27,11 +35,21 @@ public class AirDataHandlerService {
     @Value("${changeable.restUrl}")
     private String restUrl;
 
+    public void importDataSet() {
+        ResponseEntity<List<AirDataAPIResult>> response = restTemplate.exchange(
+                "https://api.luftdaten.info/static/v1/filter/type=SDS011", HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<AirDataAPIResult>>() {
+                });
+
+        List<AirDataAPIResult> result = response.getBody();
+
+        System.out.println(result.size());
+    }
+
     /**
      * Return all available sensors
      */
     public List<Sensor> getSensors() {
-        weatherDataService.test();
         List<Sensor> result = sensorRepository.findAll();
         return result;
     }
@@ -80,6 +98,8 @@ public class AirDataHandlerService {
     }
 
     public BySensorResponse getBySensor(String sensor, long timestamp) {
+        weatherDataService.test();
+
         // retrieve all relevant measurements from the database
         List<Measurement> allMeasurements = measurementRepository.getBySensor(sensor, timestamp);
 

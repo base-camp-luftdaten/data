@@ -5,8 +5,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -44,12 +42,22 @@ public class WeatherDataService {
 	}
 
 	public void test() {
-		Sensor s = new Sensor();
-		s.lat = -36.002894;
-		s.lon = -69.277013;
-		s.id = "asdf1234";
+		// Sensor s = new Sensor();
+		// s.lat = -36.002894;
+		// s.lon = -69.277013;
+		// s.id = "asdf1234";
 
-		this.persist(Reader.take(), s);
+		// this.persist(Reader.take(), s);
+		List<Sensor> allSensors = airDataService.getSensors();
+
+		// Fetch the weather forecast outside of loop because it is independent of the
+		// dust sensor location
+		Forecast aForecast = Reader.take();
+		System.out.println("Stations online: " + aForecast.positionRegister.length);
+
+		for (Sensor aSensor : allSensors) {
+			this.persist(aForecast, aSensor);
+		}
 	}
 
 	/**
@@ -107,7 +115,7 @@ public class WeatherDataService {
 
 	public HourlyWeatherReport getForecastFor(String aSensorId, long aTimestampInSeconds) {
 		// round timestamp to nearest hour
-		long nearestHour = Math.round(aTimestampInSeconds / 3600) * 3600000;		
+		long nearestHour = Math.round(aTimestampInSeconds / 3600) * 3600000;
 
 		return this.weatherReportRepository.getForecastFor(aSensorId, new Date(nearestHour));
 	}

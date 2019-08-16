@@ -55,7 +55,7 @@ async function processFile(fileName, dateString, sensorDataCollection, sensorCol
           await sensorCollection.insertOne({ sensor_id: sensor_id, lat: value.lat, lon: value.lon });
         } catch (err) {
           if (err.code !== 11000) {
-            console.error(err);
+            logger.log(err);
           }
         }
 
