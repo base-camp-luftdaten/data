@@ -1,5 +1,7 @@
 package airDataBackendService.repositories;
 
+import java.util.Date;
+
 import com.mongodb.client.result.UpdateResult;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +30,13 @@ public class WeatherReportRepositoryCustomImpl implements WeatherReportRepositor
 
       UpdateResult result = mongoTemplate.upsert(query, update, HourlyWeatherReport.class);
 
-      System.out.println("Modified: " + result.getModifiedCount());
-      System.out.println("Inserted: " + result.getUpsertedId());
+      // System.out.println("Modified: " + result.getModifiedCount());
+      // System.out.println("Inserted: " + result.getUpsertedId());
     }
+  }
+
+  public HourlyWeatherReport getForecastFor(String aSensorId, Date hour) {
+    return mongoTemplate.findOne(new Query(Criteria.where("sensor_id").is(aSensorId).and("hour").is(hour)),
+        HourlyWeatherReport.class);
   }
 }

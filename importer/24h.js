@@ -80,7 +80,7 @@ async function processFile(fileName, dateString, sensorDataCollection, sensorCol
       })
     );
   } catch (err) {
-    console.error(`An error occured while processing ${url}:\n${err}\nNotice: this did not stop the processing of the current set of CSV files\n\n`);
+    logger.log(`An error occured while processing ${url}:\n${err}\nNotice: this did not stop the processing of the current set of CSV files\n\n`);
   }
 }
 
@@ -124,7 +124,7 @@ async function getEntireDay(dateString) {
     // Send off x requests at once, then wait until they're done before starting the next x requests
     await processSequentially(batchedFunctions);
   } catch (err) {
-    console.error(err);
+    logger.log(err);
   }
 
   await dataClient.close();
@@ -163,7 +163,7 @@ if (singleDay) {
         `--- Total time: ${Math.floor((new Date().getTime() - before.getTime()) / 1000)} seconds---`
       );
     })
-    .catch(console.error);
+    .catch(logger.log);
 } else {
   downloadPlain('https://archive.luftdaten.info').then(function(text) {
     // @ts-ignore

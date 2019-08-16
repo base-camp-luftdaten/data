@@ -4,7 +4,13 @@
 
 You need [docker-compose](https://docs.docker.com/compose/install/) installed to run the MongoDB database. To start it, run `docker-compose up` in the project root directory. This should start the MongoDB docker container.
 
-To import data into the database, you need [Node.js](https://nodejs.org/en/). First, run `npm install` in the project root. You can run the import script by using `node importer/index.js`. This should feed yesterdays dataset into the database.
+To import data into the database, you need [Node.js](https://nodejs.org/en/). First, run `npm install` in the project root. You can run the import script by using `node importer/24h.js --single-day`. This should feed yesterdays dataset into the database.
+
+The `--single-day` flag indicates that only a single day should be imported.
+
+It is also possible to specify the day that should be imported by passing the date in the following format: `node importer/24h.js 2019-08-15 --single-day`. The default value is yesterday.
+
+When run without using `--single-day`, the importer will import the entire dataset (day-by-day), starting with the passed date (or yesterday, if no date was specified).
 
 To inspect the MongoDB database using a GUI, I recommend [Robo 3T](https://robomongo.org/).
 

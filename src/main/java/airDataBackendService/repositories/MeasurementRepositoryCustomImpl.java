@@ -29,6 +29,10 @@ public class MeasurementRepositoryCustomImpl implements MeasurementRepositoryCus
     return calendar.getTime();
   }
 
+  /**
+   * For a sensor (sensor) and a timestamp (timestampInSeconds), retrieve the measurements
+   * per day for the last week, starting from the timestamp.
+   */
   @Override
   public List<Measurement> getBySensor(String sensor, long timestampInSeconds) {
     long threshold = 3 * 60 * 60; // 3 hours represented in seconds

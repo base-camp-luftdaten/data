@@ -1,5 +1,6 @@
 package airDataBackendService.services;
 
+import airDataBackendService.database.HourlyWeatherReport;
 import airDataBackendService.database.Measurement;
 import airDataBackendService.database.Sensor;
 import airDataBackendService.repositories.MeasurementRepository;
@@ -45,6 +46,10 @@ public class AirDataHandlerService {
         return false;
     }
 
+    /**
+     * A list of measurements is continuous when there are no large gaps between
+     * measurements. (Offset = gap)
+     */
     private boolean isContinuous(List<Measurement> measurements, long startTimeInSeconds) {
         long endTimeInSeconds = startTimeInSeconds - 7 * 24 * 60 * 60;
         long offsetInSeconds = 3 * 60 * 60;// 3 hours in seconds
@@ -58,6 +63,9 @@ public class AirDataHandlerService {
         return true;
     }
 
+    /**
+     * Returns the best fit measurement (by timestamp) for a certain timestamp.
+     */
     private Measurement bestFit(List<Measurement> measurements, long timestamp) {
         Measurement result = new Measurement();
         result.timestamp = Long.MAX_VALUE;
@@ -79,6 +87,7 @@ public class AirDataHandlerService {
         response.continuous = this.isContinuous(allMeasurements, timestamp);
         if (response.continuous) {
             response.measurement = this.bestFit(allMeasurements, timestamp);
+            response.weatherReport = weatherDataService.getForecastFor(sensor, timestamp);
         }
         return response;
     }

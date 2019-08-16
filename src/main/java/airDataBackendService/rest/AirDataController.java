@@ -43,6 +43,4 @@ public class AirDataController {
 
         return airDataHandlerService.getBySensor(sensor, timestamp);
     }
-
-    //TODO REST API for KML files
 }
