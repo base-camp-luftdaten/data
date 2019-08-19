@@ -34,6 +34,9 @@ public class AirDataHandlerService {
     @Value("${changeable.restUrl}")
     private String restUrl;
 
+    /**
+     * not used yet
+     */
     public void importDataSet() {
         ResponseEntity<List<AirDataAPIResult>> response = restTemplate.exchange(
                 "https://api.luftdaten.info/static/v1/filter/type=SDS011", HttpMethod.GET, null,
