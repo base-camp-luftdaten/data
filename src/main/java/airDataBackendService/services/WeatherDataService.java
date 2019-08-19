@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import airDataBackendService.KMLImporter.Coordinate;
 import airDataBackendService.KMLImporter.Forecast;
 import airDataBackendService.KMLImporter.Reader;
 import airDataBackendService.KMLImporter.StationData;
@@ -86,9 +85,6 @@ public class WeatherDataService {
 		// The corresponding timestamps for the weather report
 		Date[] times = aForecast.zeitschritte(from, to);
 
-		System.out.println(station.name + ": " + station.coordinate.toString() + ", Distanz: "
-				+ station.coordinate.distance(new Coordinate(lat, lon)) + " km");
-
 		ArrayList<HourlyWeatherReport> weatherReports = new ArrayList<HourlyWeatherReport>(times.length);
 
 		for (int i = 0; i < times.length; i++) {
@@ -107,6 +103,7 @@ public class WeatherDataService {
 
 			weatherReport.hour = times[i];
 			weatherReport.sensor_id = aSensor.id;
+			weatherReport.station_name = station.name;
 
 			weatherReports.add(weatherReport);
 		}
@@ -115,8 +112,14 @@ public class WeatherDataService {
 
 	public HourlyWeatherReport getForecastFor(String aSensorId, long aTimestampInSeconds) {
 		// round timestamp to nearest hour
-		long nearestHour = Math.round(aTimestampInSeconds / 3600) * 3600000;
+		long nearestHour = (long) Math.round(aTimestampInSeconds / 3600) * (long) 3600000;
 
-		return this.weatherReportRepository.getForecastFor(aSensorId, new Date(nearestHour));
+		if (aTimestampInSeconds % 3600 > 1800) {
+			nearestHour += 3600000;
+		}
+
+		Date d = new Date(nearestHour);
+
+		return this.weatherReportRepository.getForecastFor(aSensorId, d);
 	}
 }

@@ -2,6 +2,8 @@ package airDataBackendService.database;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -11,12 +13,17 @@ import org.springframework.data.mongodb.core.mapping.Field;
 // make the combination of hour and sensor_id unique
 @CompoundIndex(def = "{'hour':1, 'sensor_id':1}", unique = true)
 public class HourlyWeatherReport {
+	@JsonIgnore
 	@DateTimeFormat
 	@Field("hour")
 	public Date hour;
 
+	@JsonIgnore
 	@Field("sensor_id")
 	public String sensor_id;
+
+	@Field("station_name")
+	public String station_name;
 
 	@Field("windspeed")
 	public double windspeed;

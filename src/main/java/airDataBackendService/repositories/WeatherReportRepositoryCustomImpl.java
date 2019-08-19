@@ -2,8 +2,6 @@ package airDataBackendService.repositories;
 
 import java.util.Date;
 
-import com.mongodb.client.result.UpdateResult;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -26,12 +24,9 @@ public class WeatherReportRepositoryCustomImpl implements WeatherReportRepositor
           .set("temperature", report.temperature).set("dewPoint", report.dewPoint)
           .set("airPressure", report.airPressure).set("precipitation", report.precipitation)
           .set("sleetPrecipitation", report.sleetPrecipitation).set("visibility", report.visibility)
-          .set("foggProbability", report.foggProbability);
+          .set("foggProbability", report.foggProbability).set("station_name", report.station_name);
 
-      UpdateResult result = mongoTemplate.upsert(query, update, HourlyWeatherReport.class);
-
-      // System.out.println("Modified: " + result.getModifiedCount());
-      // System.out.println("Inserted: " + result.getUpsertedId());
+      mongoTemplate.upsert(query, update, HourlyWeatherReport.class);
     }
   }
 

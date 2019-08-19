@@ -169,21 +169,28 @@ if (singleDay) {
     // @ts-ignore
     const $ = cheerio.load(text);
 
+    /** @type {Array<string>} */
     const list = $('td a')
       .toArray()
       .map(function(element) {
         return element.children[0].data.replace('/', '');
       })
-      .filter(function(text) {
-        return !text.includes('.md');
+      .filter(function(/** @type {string} */ text) {
+        return /^\d{4}-\d{2}-\d{2}$/.test(text);
       });
 
     const startDateIndex = list.findIndex(function(date) {
       return date === startDate;
     });
 
-    list.splice(startDateIndex + 1);
+    if (startDateIndex !== -1) {
+      list.splice(startDateIndex + 1);
+    }
     list.reverse();
+
+    if (list.length === 0) {
+      return logger.log('No files to import.');
+    }
 
     const todolist = list.map(function(date) {
       return async function() {

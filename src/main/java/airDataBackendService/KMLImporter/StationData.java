@@ -20,10 +20,10 @@ public class StationData {
 	public String sunDurationUnit = "Min";
 	public double[] temperatureData;
 	public int temperatureDataErrorClass;
-	public String temperatureUnit = "�C";
+	public String temperatureUnit = "°C";
 	public double[] tauPunktData;
 	public int tauPunktDataErrorClass;
-	public String tauPunktUnit = "�C";
+	public String tauPunktUnit = "°C";
 	public double[] luftdruckData;
 	public int luftdruckDataErrorClass;
 	public String luftdruckUnit = "Pascal";

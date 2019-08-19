@@ -1,6 +1,5 @@
 package airDataBackendService.services;
 
-import airDataBackendService.database.HourlyWeatherReport;
 import airDataBackendService.database.Measurement;
 import airDataBackendService.database.Sensor;
 import airDataBackendService.repositories.MeasurementRepository;
@@ -98,16 +97,16 @@ public class AirDataHandlerService {
     }
 
     public BySensorResponse getBySensor(String sensor, long timestamp) {
-        weatherDataService.test();
+        // weatherDataService.test();
 
         // retrieve all relevant measurements from the database
         List<Measurement> allMeasurements = measurementRepository.getBySensor(sensor, timestamp);
 
         BySensorResponse response = new BySensorResponse();
         response.continuous = this.isContinuous(allMeasurements, timestamp);
+        response.weatherReport = weatherDataService.getForecastFor(sensor, timestamp);
         if (response.continuous) {
             response.measurement = this.bestFit(allMeasurements, timestamp);
-            response.weatherReport = weatherDataService.getForecastFor(sensor, timestamp);
         }
         return response;
     }
