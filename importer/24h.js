@@ -55,7 +55,7 @@ async function processFile(fileName, dateString, sensorDataCollection, sensorCol
           await sensorCollection.insertOne({ sensor_id: sensor_id, lat: value.lat, lon: value.lon });
         } catch (err) {
           if (err.code !== 11000) {
-            console.error(err);
+            logger.log(err);
           }
         }
 
@@ -80,7 +80,7 @@ async function processFile(fileName, dateString, sensorDataCollection, sensorCol
       })
     );
   } catch (err) {
-    console.error(`An error occured while processing ${url}:\n${err}\nNotice: this did not stop the processing of the current set of CSV files\n\n`);
+    logger.log(`An error occured while processing ${url}:\n${err}\nNotice: this did not stop the processing of the current set of CSV files\n\n`);
   }
 }
 
@@ -124,7 +124,7 @@ async function getEntireDay(dateString) {
     // Send off x requests at once, then wait until they're done before starting the next x requests
     await processSequentially(batchedFunctions);
   } catch (err) {
-    console.error(err);
+    logger.log(err);
   }
 
   await dataClient.close();
@@ -163,27 +163,34 @@ if (singleDay) {
         `--- Total time: ${Math.floor((new Date().getTime() - before.getTime()) / 1000)} seconds---`
       );
     })
-    .catch(console.error);
+    .catch(logger.log);
 } else {
   downloadPlain('https://archive.luftdaten.info').then(function(text) {
     // @ts-ignore
     const $ = cheerio.load(text);
 
+    /** @type {Array<string>} */
     const list = $('td a')
       .toArray()
       .map(function(element) {
         return element.children[0].data.replace('/', '');
       })
-      .filter(function(text) {
-        return !text.includes('.md');
+      .filter(function(/** @type {string} */ text) {
+        return /^\d{4}-\d{2}-\d{2}$/.test(text);
       });
 
     const startDateIndex = list.findIndex(function(date) {
       return date === startDate;
     });
 
-    list.splice(startDateIndex + 1);
+    if (startDateIndex !== -1) {
+      list.splice(startDateIndex + 1);
+    }
     list.reverse();
+
+    if (list.length === 0) {
+      return logger.log('No files to import.');
+    }
 
     const todolist = list.map(function(date) {
       return async function() {

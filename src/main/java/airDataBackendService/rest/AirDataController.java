@@ -1,12 +1,10 @@
 package airDataBackendService.rest;
 
-import airDataBackendService.database.Measurement;
 import airDataBackendService.database.Sensor;
 import airDataBackendService.services.AirDataHandlerService;
 import airDataBackendService.util.Location;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,15 +21,6 @@ public class AirDataController {
 
     @Autowired
     AirDataHandlerService airDataHandlerService;
-
-    @GetMapping(value = "dust", produces = "application/json")
-    public List<Measurement> getDustData(@RequestParam(value = "maxage", required = false) String maxage,
-            @RequestParam(value = "box", required = false) String box,
-            @RequestParam(value = "country", defaultValue = "DE") String country,
-            @RequestParam(value = "limit", defaultValue = "1000") int limit,
-            @RequestParam(value = "offset", defaultValue = "0") int offset) {
-        return airDataHandlerService.getDustData(maxage, box, country, limit, offset);
-    }
 
     @GetMapping(value = "sensors", produces = "application/json")
     public Map<String, Location> getAllSensors() {
@@ -54,6 +43,4 @@ public class AirDataController {
 
         return airDataHandlerService.getBySensor(sensor, timestamp);
     }
-
-    //TODO REST API for KML files
 }

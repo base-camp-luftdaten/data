@@ -2,27 +2,28 @@ package airDataBackendService.services;
 
 import airDataBackendService.database.Measurement;
 import airDataBackendService.database.Sensor;
-import airDataBackendService.database.SensorRepository;
-import airDataBackendService.database.MeasurementRepository;
-import airDataBackendService.util.Box;
+import airDataBackendService.repositories.MeasurementRepository;
+import airDataBackendService.repositories.SensorRepository;
+import airDataBackendService.rest.AirDataAPIResult;
 import airDataBackendService.rest.BySensorResponse;
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 @Component
 public class AirDataHandlerService {
-    // private static final Logger LOGGER =
-    // LoggerFactory.getLogger(AirDataHandlerService.class);
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private WeatherDataService weatherDataService;
 
     @Autowired
     private SensorRepository sensorRepository;
@@ -33,43 +34,26 @@ public class AirDataHandlerService {
     @Value("${changeable.restUrl}")
     private String restUrl;
 
-    private Date yesterday() {
-        final Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, -1);
-        return cal.getTime();
+    /**
+     * not used yet
+     */
+    public void importDataSet() {
+        ResponseEntity<List<AirDataAPIResult>> response = restTemplate.exchange(
+                "https://api.luftdaten.info/static/v1/filter/type=SDS011", HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<AirDataAPIResult>>() {
+                });
+
+        List<AirDataAPIResult> result = response.getBody();
+
+        System.out.println(result.size());
     }
 
-    public List<Measurement> getDustData(String maxage, String box, String country, int limit, int offset) {
-        System.out.println("[maxage]: " + maxage);
-        System.out.println("[box]: " + box);
-        System.out.println("[country]: " + country);
-        System.out.println("[limit]: " + limit);
-        System.out.println("[offset]: " + offset);
-
-        if (limit < 1 || limit > 100000) {
-            limit = 10000;
-        }
-
-        if (offset < 0) {
-            offset = 0;
-        }
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-        Date maxageDate = yesterday();
-        try {
-            if (maxage != null) {
-                maxageDate = dateFormat.parse(maxage);
-            }
-        } catch (ParseException pe) {
-            pe.printStackTrace();
-            return new ArrayList<Measurement>();
-        }
-
-        return measurementRepository.customQuery(limit, offset, Box.from(box), maxageDate);
-    }
-
+    /**
+     * Return all available sensors
+     */
     public List<Sensor> getSensors() {
-        return sensorRepository.findAll();
+        List<Sensor> result = sensorRepository.findAll();
+        return result;
     }
 
     private boolean hasMeasurementWithinTimestampWithOffset(List<Measurement> measurements, long timestampInSeconds,
@@ -82,6 +66,10 @@ public class AirDataHandlerService {
         return false;
     }
 
+    /**
+     * A list of measurements is continuous when there are no large gaps between
+     * measurements. (Offset = gap)
+     */
     private boolean isContinuous(List<Measurement> measurements, long startTimeInSeconds) {
         long endTimeInSeconds = startTimeInSeconds - 7 * 24 * 60 * 60;
         long offsetInSeconds = 3 * 60 * 60;// 3 hours in seconds
@@ -95,6 +83,9 @@ public class AirDataHandlerService {
         return true;
     }
 
+    /**
+     * Returns the best fit measurement (by timestamp) for a certain timestamp.
+     */
     private Measurement bestFit(List<Measurement> measurements, long timestamp) {
         Measurement result = new Measurement();
         result.timestamp = Long.MAX_VALUE;
@@ -114,6 +105,7 @@ public class AirDataHandlerService {
 
         BySensorResponse response = new BySensorResponse();
         response.continuous = this.isContinuous(allMeasurements, timestamp);
+        response.weatherReport = weatherDataService.getForecastFor(sensor, timestamp);
         if (response.continuous) {
             response.measurement = this.bestFit(allMeasurements, timestamp);
         }

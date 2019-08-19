@@ -1,4 +1,4 @@
-package airDataBackendService.database;
+package airDataBackendService.repositories;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
