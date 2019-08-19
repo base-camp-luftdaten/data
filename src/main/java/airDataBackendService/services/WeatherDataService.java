@@ -40,25 +40,6 @@ public class WeatherDataService {
 		}
 	}
 
-	public void test() {
-		// Sensor s = new Sensor();
-		// s.lat = -36.002894;
-		// s.lon = -69.277013;
-		// s.id = "asdf1234";
-
-		// this.persist(Reader.take(), s);
-		List<Sensor> allSensors = airDataService.getSensors();
-
-		// Fetch the weather forecast outside of loop because it is independent of the
-		// dust sensor location
-		Forecast aForecast = Reader.take();
-		System.out.println("Stations online: " + aForecast.positionRegister.length);
-
-		for (Sensor aSensor : allSensors) {
-			this.persist(aForecast, aSensor);
-		}
-	}
-
 	/**
 	 * Takes a forecast and a sensor and saves the forecast data in the database
 	 */

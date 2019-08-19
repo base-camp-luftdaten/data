@@ -97,8 +97,6 @@ public class AirDataHandlerService {
     }
 
     public BySensorResponse getBySensor(String sensor, long timestamp) {
-        // weatherDataService.test();
-
         // retrieve all relevant measurements from the database
         List<Measurement> allMeasurements = measurementRepository.getBySensor(sensor, timestamp);
 
