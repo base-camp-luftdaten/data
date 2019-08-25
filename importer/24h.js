@@ -39,7 +39,11 @@ async function processFile(fileName, dateString, sensorDataCollection, sensorCol
     const day = new Date(`${dateString}T00:00:00Z`);
     const sensors = new Map();
 
-    records.forEach(function(record) {
+    /**
+     * @typedef {{ sensor_id: number, lat: number, lon: number, timestamp: number, P10: number, P25: number }} Record
+     */
+
+    records.forEach(function(/** @type {Record} */ record) {
       if (sensors.get(record.sensor_id) === undefined) {
         sensors.set(record.sensor_id, { lat: record.lat, lon: record.lon, measurements: new Map() });
       }

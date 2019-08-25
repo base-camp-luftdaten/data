@@ -33,7 +33,6 @@ public class WeatherDataService {
 		// Fetch the weather forecast outside of loop because it is independent of the
 		// dust sensor location
 		Forecast aForecast = Reader.take();
-		System.out.println("Stations online: " + aForecast.positionRegister.length);
 
 		for (Sensor aSensor : allSensors) {
 			this.persist(aForecast, aSensor);

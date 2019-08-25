@@ -12,13 +12,15 @@ public class AirDataAPIResult {
 
   private long id;
 
-  @JsonProperty("sensorDataValues")
+  @JsonProperty("sensordatavalues")
   private List<SensorDataValue> values;
 
   @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
   private Date timestamp;
 
   private Location location;
+
+  private Sensor sensor;
 
   public long getId() {
     return this.id;
@@ -34,5 +36,9 @@ public class AirDataAPIResult {
 
   public Location getLocation() {
     return this.location;
+  }
+
+  public Sensor getSensor() {
+    return this.sensor;
   }
 }

@@ -28,7 +28,7 @@ async function downloadPlain(url) {
 async function downloadFromArchive(dateString) {
   const res = await fetch(`https://archive.luftdaten.info/${dateString}/`, { timeout: 1000 * 60 * 2 });
 
-  if (res.status !== 200 || res.status !== 400) {
+  if (res.status !== 200 && res.status !== 400) {
     throw new Error(`Error while trying to get measurements from https://archive.luftdaten.info/${dateString}/\nStatus code: ${res.status}`);
   }
 

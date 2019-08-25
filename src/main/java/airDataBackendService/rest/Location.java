@@ -19,6 +19,8 @@ public class Location {
 
   private double longitude;
 
+  private double latitude;
+
   public long getId() {
     return this.id;
   }
@@ -41,5 +43,9 @@ public class Location {
 
   public double getLongitude() {
     return this.longitude;
+  }
+
+  public double getLatitude() {
+    return this.latitude;
   }
 }
