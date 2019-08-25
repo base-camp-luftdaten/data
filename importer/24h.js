@@ -127,8 +127,13 @@ async function getEntireDay(dateString) {
     logger.log(err);
   }
 
-  await dataClient.close();
-  await sensorClient.close();
+  if (dataClient) {
+    await dataClient.close();
+  }
+
+  if (sensorClient) {
+    await sensorClient.close();
+  }
 }
 
 /**
