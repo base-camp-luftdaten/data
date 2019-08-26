@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 import airDataBackendService.database.DailyMeasurements;
 import airDataBackendService.database.Measurement;
@@ -30,8 +31,8 @@ public class MeasurementRepositoryCustomImpl implements MeasurementRepositoryCus
   }
 
   /**
-   * For a sensor (sensor) and a timestamp (timestampInSeconds), retrieve the measurements
-   * per day for the last week, starting from the timestamp.
+   * For a sensor (sensor) and a timestamp (timestampInSeconds), retrieve the
+   * measurements per day for the last week, starting from the timestamp.
    */
   @Override
   public List<Measurement> getBySensor(String sensor, long timestampInSeconds) {
@@ -76,20 +77,26 @@ public class MeasurementRepositoryCustomImpl implements MeasurementRepositoryCus
     return allMeasurements;
   }
 
-  // @Override
-  // public List<Measurement> getBySensor(String sensor, int timestamp) {
-  // long startTime = System.nanoTime();
+  /**
+   * Requires the day to have its time set to 00:00:00
+   */
+  @Override
+  public List<Measurement> getBySensorSingleDay(String sensor, Date day) {
+    Query query = new Query(Criteria.where("sensor_id").is(sensor).and("day").is(day));
 
-  // List<Measurement> result = mongoTemplate.find(
-  // Query.query(Criteria.where("sensorId").is(sensor).and("timestamp").gte(timestamp
-  // - 10 * 60 * 1000)),
-  // Measurement.class);
+    DailyMeasurements dm = mongoTemplate.findOne(query, DailyMeasurements.class);
 
-  // long endTime = System.nanoTime();
-  // long duration = (endTime - startTime) / 1000000;
+    if (dm == null || dm.measurements == null) {
+      return new ArrayList<Measurement>();
+    }
 
-  // System.out.println("/bySensor took " + duration + " ms!");
+    return dm.measurements;
 
-  // return result;
-  // }
+  }
+
+  @Override
+  public void addMeasurements(String sensor, Date day, List<Measurement> measurements) {
+    mongoTemplate.upsert(Query.query(Criteria.where("sensor_id").is(sensor).and("day").is(day)),
+        new Update().push("measurements").each(measurements), DailyMeasurements.class);
+  }
 }

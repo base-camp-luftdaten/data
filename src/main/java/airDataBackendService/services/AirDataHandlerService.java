@@ -6,23 +6,25 @@ import airDataBackendService.repositories.MeasurementRepository;
 import airDataBackendService.repositories.SensorRepository;
 import airDataBackendService.rest.AirDataAPIResult;
 import airDataBackendService.rest.BySensorResponse;
-import airDataBackendService.rest.SensorDataValue;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Optional;
+
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -78,11 +80,6 @@ public class AirDataHandlerService {
         System.out.println(rawResult.size());
         System.out.println(cleanResults.size());
 
-        class Measurement {
-            public double p1;
-            public double p2;
-        }
-
         class MeasurementData {
             public double lat;
             public double lon;
@@ -136,22 +133,77 @@ public class AirDataHandlerService {
             }
 
             Measurement m = new Measurement();
-            m.p1 = p1;
-            m.p2 = p2;
+            m.p10 = p1;
+            m.p25 = p2;
+            m.timestamp = timestampInSec;
 
             sensorIDToData.get(sensorId).timestampToMeasurement.put(timestampInSec, m);
 
         }
+
+        int duplicates = 0;
+
         for (Map.Entry<Long, MeasurementData> entry : sensorIDToData.entrySet()) {
             Long sensorId = entry.getKey();
             MeasurementData data = entry.getValue();
 
             // first, save the sensor to the "sensors"-database
-            // TODO
+            Sensor s = new Sensor(sensorId.toString(), data.lat, data.lon);
+
+            try {
+                sensorRepository.save(s);
+            } catch (DuplicateKeyException e) {
+                duplicates++;
+            }
 
             // second, save the measurements
-            // TODO
+
+            // sort the measurements into "buckets" of days where each "bucket" represents a
+            // single day and contains a list of measurements
+            Map<Date, List<Measurement>> daysToMeasurements = new HashMap<Date, List<Measurement>>();
+            for (Map.Entry<Long, Measurement> measurementEntry : data.timestampToMeasurement.entrySet()) {
+                Long timestampInSec = measurementEntry.getKey();
+                Measurement measurement = measurementEntry.getValue();
+                long dayTimestamp = timestampInSec - (timestampInSec % 86400);
+                Date day = new Date(dayTimestamp * 1000);
+
+                if (!daysToMeasurements.containsKey(day)) {
+                    daysToMeasurements.put(day, new ArrayList<Measurement>());
+                }
+
+                daysToMeasurements.get(day).add(measurement);
+            }
+
+            for (Map.Entry<Date, List<Measurement>> measurementEntry : daysToMeasurements.entrySet()) {
+                Date day = measurementEntry.getKey();
+                List<Measurement> measurements = measurementEntry.getValue();
+
+                List<Measurement> measurementsFromDB = measurementRepository.getBySensorSingleDay(sensorId.toString(),
+                        day);
+
+                List<Measurement> nonDuplicates = new ArrayList<Measurement>();
+                for (Measurement a : measurements) {
+                    if (!this.containsMeasurementWithSameTimestamp(a, measurementsFromDB)) {
+                        nonDuplicates.add(a);
+                    }
+                }
+
+                measurementRepository.addMeasurements(sensorId.toString(), day, nonDuplicates);
+            }
+
         }
+
+        System.out.println("Added " + (sensorIDToData.size() - duplicates) + " new sensors.");
+    }
+
+    private boolean containsMeasurementWithSameTimestamp(Measurement a, List<Measurement> measurements) {
+        for (Measurement b : measurements) {
+            if (a.timestamp == b.timestamp) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
