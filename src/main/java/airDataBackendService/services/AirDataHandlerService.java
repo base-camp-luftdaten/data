@@ -223,31 +223,33 @@ public class AirDataHandlerService {
         return result;
     }
 
-    private boolean hasMeasurementWithinTimestampWithOffset(List<Measurement> measurements, long timestampInSeconds,
+    private Result hasMeasurementWithinTimestampWithOffset(List<Measurement> measurements, long timestampInSeconds,
             long offsetInSeconds) {
         for (Measurement m : measurements) {
             if (Math.abs(m.timestamp - timestampInSeconds) <= offsetInSeconds) {
-                return true;
+                return new Result(true, "");
             }
         }
-        return false;
+        return new Result(false, "No measurements found for timestamp: " + timestampInSeconds + " within +-"
+                + offsetInSeconds + " seconds (" + offsetInSeconds / 3600 + " hours)");
     }
 
     /**
      * A list of measurements is continuous when there are no large gaps between
      * measurements. (Offset = gap)
      */
-    private boolean isContinuous(List<Measurement> measurements, long startTimeInSeconds) {
+    private Result isContinuous(List<Measurement> measurements, long startTimeInSeconds) {
         long endTimeInSeconds = startTimeInSeconds - 7 * 24 * 60 * 60;
         long offsetInSeconds = 3 * 60 * 60;// 3 hours in seconds
 
         for (long i = startTimeInSeconds; i >= endTimeInSeconds; i -= 60 * 60) {
-            if (!this.hasMeasurementWithinTimestampWithOffset(measurements, i, offsetInSeconds)) {
-                return false;
+            Result r = this.hasMeasurementWithinTimestampWithOffset(measurements, i, offsetInSeconds);
+            if (!r.getResult()) {
+                return r;
             }
         }
 
-        return true;
+        return new Result(true, "");
     }
 
     /**
@@ -271,12 +273,33 @@ public class AirDataHandlerService {
         List<Measurement> allMeasurements = measurementRepository.getBySensor(sensor, timestamp);
 
         BySensorResponse response = new BySensorResponse();
-        response.continuous = this.isContinuous(allMeasurements, timestamp);
+        Result continuousResult = this.isContinuous(allMeasurements, timestamp);
+        response.continuous = continuousResult.getResult();
         response.weatherReport = weatherDataService.getForecastFor(sensor, timestamp);
         if (response.continuous) {
             response.measurement = this.bestFit(allMeasurements, timestamp);
+        } else {
+            response.reason = continuousResult.getReason();
         }
         return response;
     }
 
+}
+
+class Result {
+    private boolean result;
+    private String reason;
+
+    public Result(boolean result, String reason) {
+        this.result = result;
+        this.reason = reason;
+    }
+
+    public boolean getResult() {
+        return this.result;
+    }
+
+    public String getReason() {
+        return this.reason;
+    }
 }
