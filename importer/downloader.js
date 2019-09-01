@@ -14,8 +14,11 @@ async function downloadLatest() {
   return await response.json();
 }
 
+const https = require('https');
+const agent = new https.Agent({ maxSockets: 100 });
+
 async function downloadPlain(url) {
-  const response = await fetch(url, { timeout: 1000 * 60 * 2 });
+  const response = await fetch(url, { timeout: 0, agent: agent });
   return await response.text();
 }
 
