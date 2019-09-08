@@ -34,4 +34,9 @@ public class WeatherReportRepositoryCustomImpl implements WeatherReportRepositor
     return mongoTemplate.findOne(new Query(Criteria.where("sensor_id").is(aSensorId).and("hour").is(hour)),
         HourlyWeatherReport.class);
   }
+  public List<HourlyWeatherReport> getAllForecastsFor(Date hour) 
+  {
+      List<HourlyWeatherReport> hourSet = mongoTemplate.findAll(new Query(Criteria.where("hour").is(hour)), HourlyWeatherReport.class);
+      return hourSet;
+  }
 }
