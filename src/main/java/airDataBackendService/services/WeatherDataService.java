@@ -182,7 +182,7 @@ public class WeatherDataService {
 			{
 				hold = new PointHolder(Sensor.lat,Sensor.lon,report);
 			}
-			}
+		}
 
 		if(Double.isFinite(report.windspeed))
 		{
