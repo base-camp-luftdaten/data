@@ -275,7 +275,7 @@ public class AirDataHandlerService {
         BySensorResponse response = new BySensorResponse();
         Result continuousResult = this.isContinuous(allMeasurements, timestamp);
         response.continuous = continuousResult.getResult();
-        response.weatherReport = weatherDataService.getForecastFor(sensor, timestamp);
+        response.weatherReport = weatherDataService.getForecastFor(sensor, timestamp + 60 * 60 * 5);
         if (response.continuous) {
             response.measurement = this.bestFit(allMeasurements, timestamp);
         } else {
