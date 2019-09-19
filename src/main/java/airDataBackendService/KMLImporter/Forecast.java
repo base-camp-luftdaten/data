@@ -39,6 +39,27 @@ public class Forecast {
 	}
 
 	/**
+	 * Findet die Koordinaten der naechstgelegenen Station ausgehend von der
+	 * gegebenen Koordinate und Liste
+	 * 
+	 * @param cord Koordinate von der aus die naehste Station gesucht wird
+	 * @return Koordinate der naechstgelegenen Station in der Liste
+	 */
+	static public Coordinate getNearest(Coordinate cord, Coordinate[] list) {
+		double minDist = Double.MAX_VALUE;
+		double dist;
+		Coordinate minCord = null;
+		for (int i = 0; i < list.length; i++) {
+			dist = cord.distance(list[i]);
+			if (minDist > dist) {
+				minCord = list[i];
+				minDist = dist;
+			}
+		}
+		return minCord;
+	}
+
+	/**
 	 * Gibt die Stationsdaten der naechstgelegenen Station aus ausgehend von der
 	 * gegebenen Latitude und Longitude
 	 * 
@@ -315,4 +336,36 @@ public class Forecast {
 		}
 		return datums;
 	}
+
+	public boolean doIContainErrors() {
+		StationData s;
+		Date von = firstAvailableDate();
+		Date bis = lastAvailableDate();
+
+		for (Coordinate c : positionRegister) {
+			s = cordConect.get(c);
+
+			if (containsNaN(windgeschwindigkeit(von, bis, s)) || containsNaN(maxWindgeschwindigkeit(von, bis, s))
+					|| containsNaN(sonnenEinstrahlung(von, bis, s)) || containsNaN(sonnenDauer(von, bis, s))
+					|| containsNaN(temperatur(von, bis, s)) || containsNaN(taupunkt(von, bis, s))
+					|| containsNaN(luftdruck(von, bis, s)) || containsNaN(niederschlag(von, bis, s))
+					|| containsNaN(schneeregenNiederschlag(von, bis, s)) || containsNaN(sichtweite(von, bis, s))
+					|| containsNaN(nebelWahrscheinlichkeit(von, bis, s))) {
+				return true;
+			}
+
+		}
+
+		return false;
+	}
+
+	static public boolean containsNaN(double[] dl) {
+		for (double d : dl) {
+			if (!Double.isFinite(d)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

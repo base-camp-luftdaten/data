@@ -1,22 +1,23 @@
 package airDataBackendService.KMLImporter;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.regex.*;
+import java.util.zip.ZipInputStream;
+
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
-import java.net.URL;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import java.util.zip.ZipInputStream;
+import org.w3c.dom.*;
 
 
 public class Reader 
@@ -256,6 +257,8 @@ public class Reader
 		
 		Coordinate[] cordArray = cordList.toArray(new Coordinate[cordList.size()]);
 		f.positionRegister = cordArray;
+		
+		postEnhancement(f,cordList);
 	}
 	
 	/**
@@ -504,6 +507,98 @@ public class Reader
 		return eNameN.getTextContent();
 	}
 	
+	static private int postEnhancement(Forecast f, LinkedList<Coordinate> c)
+	{		
+		LinkedList<Coordinate>[] santasNaughtyList = new LinkedList[11];
+		LinkedList<Coordinate>[] santasGoodList = new LinkedList[11];
+		Coordinate[][] santasNaughtyArray = new Coordinate[11][];
+		Coordinate[][] santasGoodArray = new Coordinate[11][];
+
+		Coordinate idolCoord;
+		StationData idolStation;
+		StationData disfuncStation;
+		
+		int count = 0;
+		
+        for (int i = 0; i < 11; i++) 
+        {
+        	santasNaughtyList[i] = new LinkedList<Coordinate>();
+        	santasGoodList[i] = new LinkedList<Coordinate>();
+        } 
+        
+        for (Coordinate coord : c) 
+        {
+        	f.cordConect.get(coord).addToErrorRegister(santasNaughtyList, santasGoodList);
+        }
+        
+        for(int i = 0; i < 11; i++)
+        {
+        	santasNaughtyArray[i] = santasNaughtyList[i].toArray(new Coordinate[santasNaughtyList[i].size()]);
+        	santasGoodArray[i] = santasGoodList[i].toArray(new Coordinate[santasGoodList[i].size()]);
+        	
+        	santasNaughtyList[i] = null;
+        	santasGoodList[i] = null;
+        	
+        	for(int j = 0; j < santasNaughtyArray[i].length; j++)
+        	{
+        		idolCoord = Forecast.getNearest(santasNaughtyArray[i][j], santasGoodArray[i]);
+        		
+        		idolStation = f.cordConect.get(idolCoord);
+        		disfuncStation = f.cordConect.get(santasNaughtyArray[i][j]);
+        		
+        		switch(i)
+        		{
+                	case 0:
+                		disfuncStation.windSpeedData = idolStation.windSpeedData.clone();
+                		disfuncStation.windSpeedDataErrorClass = idolStation.windSpeedDataErrorClass;
+                		break;
+                    case 1:
+                    	disfuncStation.maxWindSpeedData = idolStation.maxWindSpeedData.clone();
+                    	disfuncStation.maxWindSpeedDataErrorClass = idolStation.maxWindSpeedDataErrorClass;
+                		break;
+                    case 2:
+                    	disfuncStation.sunIntensityData = idolStation.sunIntensityData.clone();
+                    	disfuncStation.sunIntensityDataErrorClass = idolStation.sunIntensityDataErrorClass;
+                		break;
+                    case 3:
+                    	disfuncStation.sunDurationData = idolStation.sunDurationData.clone();
+                    	disfuncStation.sunDurationDataErrorClass = idolStation.sunDurationDataErrorClass;
+                		break;
+                    case 4:
+                    	disfuncStation.temperatureData = idolStation.temperatureData.clone();
+                    	disfuncStation.temperatureDataErrorClass = idolStation.temperatureDataErrorClass;
+                		break;
+                    case 5:
+                    	disfuncStation.tauPunktData = idolStation.tauPunktData.clone();
+                    	disfuncStation.tauPunktDataErrorClass = idolStation.tauPunktDataErrorClass;
+                		break;
+                    case 6:
+                    	disfuncStation.luftdruckData = idolStation.luftdruckData.clone();
+                    	disfuncStation.luftdruckDataErrorClass = idolStation.luftdruckDataErrorClass;
+                		break;
+                    case 7:
+                    	disfuncStation.niederschlagData = idolStation.niederschlagData.clone();
+                    	disfuncStation.niederschlagDataErrorClass = idolStation.niederschlagDataErrorClass;
+                		break;
+                    case 8:
+                    	disfuncStation.schneeregenNiederschlagData = idolStation.schneeregenNiederschlagData.clone();
+                    	disfuncStation.schneeregenNiederschlagDataErrorClass = idolStation.schneeregenNiederschlagDataErrorClass;
+                		break;
+                    case 9:
+                    	disfuncStation.visibilityData = idolStation.visibilityData.clone();
+                    	disfuncStation.visibilityDataErrorClass = idolStation.visibilityDataErrorClass;
+                		break;
+                    case 10:
+                    	disfuncStation.foggProbabilityData = idolStation.foggProbabilityData.clone();
+                    	disfuncStation.foggProbabilityDataErrorClass = idolStation.foggProbabilityDataErrorClass;
+                		break;
+        		}
+        		
+        		count=count+1;
+        	}
+        }
+        return count;
+	}
 }
 	
 	
