@@ -47,12 +47,16 @@ public class AirDataHandlerService {
     @Value("${changeable.restUrl}")
     private String restUrl;
 
+    public void logViaWebhook(String message) {
+        // TODO
+    }
+
     @Scheduled(fixedRate = 1000 * 60 * 4)
     public void importDataSet() {
         try {
             ResponseEntity<List<AirDataAPIResult>> response;
             try {
-                response = restTemplate.exchange("https://api.luftdaten.info/static/v1/filter/type=SDS011",
+                response = restTemplate.exchange("https://data.sensor.community/airrohr/v1/filter/type=SDS011",
                         HttpMethod.GET, null, new ParameterizedTypeReference<List<AirDataAPIResult>>() {
                         });
             } catch (RestClientException rce) {

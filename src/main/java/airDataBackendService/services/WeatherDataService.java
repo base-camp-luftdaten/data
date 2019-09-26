@@ -42,6 +42,8 @@ public class WeatherDataService {
 		for (Sensor aSensor : allSensors) {
 			this.persist(aForecast, aSensor);
 		}
+
+		System.out.println("imported new forecast");
 	}
 
 	/**
