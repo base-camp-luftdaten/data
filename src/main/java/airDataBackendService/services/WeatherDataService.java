@@ -33,10 +33,17 @@ public class WeatherDataService {
 		// Fetch the weather forecast outside of loop because it is independent of the
 		// dust sensor location
 		Forecast aForecast = Reader.take();
+		if (aForecast.doIContainErrors()) {
+			// TODO: don't just print it to the console
+			System.out.println("Forcast contains errors");
+		}
+		
 
 		for (Sensor aSensor : allSensors) {
 			this.persist(aForecast, aSensor);
 		}
+
+		System.out.println("imported new forecast");
 	}
 
 	/**

@@ -1,5 +1,6 @@
 package airDataBackendService.KMLImporter;
 
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -105,7 +106,7 @@ public class StationData {
 						d[i - j] = d[i - j + 1] - stepLength;
 					}
 				} else if (Double.isNaN(lastMemory) && (interruptionDuration > 0)) {
-					errorCount = errorCount + 300;
+					errorCount = errorCount + 150;
 					for (int p = 1; interruptionDuration >= p; p++) {
 						d[i - p] = d[i - p + 1];
 					}
@@ -131,15 +132,82 @@ public class StationData {
 
 		if (errorCount == 0) {
 			return 0;
-		} else if (errorCount < 300) {
+		} else if (errorCount < 100) {
 			return 1;
-		} else if (errorCount < 600) {
+		} else if (errorCount < 420) {
 			return 2;
 		} else if (errorCount < 1000) {
 			return 3;
 		} else {
-			return -1;
+			return 4;
 		}
 	}
 
+	public void addToErrorRegister(LinkedList<Coordinate>[] Elist, LinkedList<Coordinate>[] Glist) {
+		if (this.windSpeedDataErrorClass > 2) {
+			Elist[0].add(this.coordinate);
+		} else {
+			Glist[0].add(this.coordinate);
+		}
+
+		if (this.maxWindSpeedDataErrorClass > 2) {
+			Elist[1].add(this.coordinate);
+		} else {
+			Glist[1].add(this.coordinate);
+		}
+
+		if (this.sunIntensityDataErrorClass > 2) {
+			Elist[2].add(this.coordinate);
+		} else {
+			Glist[2].add(this.coordinate);
+		}
+
+		if (this.sunDurationDataErrorClass > 2) {
+			Elist[3].add(this.coordinate);
+		} else {
+			Glist[3].add(this.coordinate);
+		}
+
+		if (this.temperatureDataErrorClass > 2) {
+			Elist[4].add(this.coordinate);
+		} else {
+			Glist[4].add(this.coordinate);
+		}
+
+		if (this.tauPunktDataErrorClass > 2) {
+			Elist[5].add(this.coordinate);
+		} else {
+			Glist[5].add(this.coordinate);
+		}
+
+		if (this.luftdruckDataErrorClass > 2) {
+			Elist[6].add(this.coordinate);
+		} else {
+			Glist[6].add(this.coordinate);
+		}
+
+		if (this.niederschlagDataErrorClass > 2) {
+			Elist[7].add(this.coordinate);
+		} else {
+			Glist[7].add(this.coordinate);
+		}
+
+		if (this.schneeregenNiederschlagDataErrorClass > 2) {
+			Elist[8].add(this.coordinate);
+		} else {
+			Glist[8].add(this.coordinate);
+		}
+
+		if (this.visibilityDataErrorClass > 2) {
+			Elist[9].add(this.coordinate);
+		} else {
+			Glist[9].add(this.coordinate);
+		}
+
+		if (this.foggProbabilityDataErrorClass > 2) {
+			Elist[10].add(this.coordinate);
+		} else {
+			Glist[10].add(this.coordinate);
+		}
+	}
 }
