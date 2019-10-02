@@ -87,3 +87,12 @@ Result:
    rsync -avz package.json username@server:/srv/data/luftdaten19/
    ```
 2. Login on the server via `ssh`, change into the `/srv/data/luftdaten19` directory and run `npm install`
+
+
+## Skipping tests when compiling
+
+This can be useful if you need to compile without having the entire project set up, since the tests require a running mongoDB instance. Add the following CLI flag to skip the unit tests:
+
+```sh
+-Dmaven.test.skip=true
+```

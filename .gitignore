@@ -57,3 +57,4 @@ data/
 .DS_Store
 latest
 .env
+src/main/resources/application.yml

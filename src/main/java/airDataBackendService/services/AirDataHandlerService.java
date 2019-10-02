@@ -11,7 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -29,6 +32,10 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 @Component
 public class AirDataHandlerService {
 
@@ -44,11 +51,31 @@ public class AirDataHandlerService {
     @Autowired
     private MeasurementRepository measurementRepository;
 
-    @Value("${changeable.restUrl}")
-    private String restUrl;
+    @Value("${webhook.endpoint}")
+    private String webhookUrl;
 
     public void logViaWebhook(String message) {
-        // TODO
+        if (webhookUrl.length() < 1) {
+            System.out.println(message);
+            return;
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.createObjectNode();
+
+        ((ObjectNode) rootNode).put("text", message);
+
+        try {
+            String jsonString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+            System.out.println(jsonString);
+            HttpEntity<String> request = new HttpEntity<String>(jsonString, headers);
+            restTemplate.postForEntity(webhookUrl, request, String.class);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
     }
 
     @Scheduled(fixedRate = 1000 * 60 * 4)
@@ -61,7 +88,7 @@ public class AirDataHandlerService {
                         });
             } catch (RestClientException rce) {
                 System.out.println(rce);
-                // TODO: print error message
+                logViaWebhook(rce.toString());
                 return;
             }
 
@@ -80,9 +107,6 @@ public class AirDataHandlerService {
                     .filter(hasP1Value) // require a p1 value
                     .filter(hasP2Value) // require a p2 value
                     .collect(Collectors.toList());
-
-            System.out.println(rawResult.size());
-            System.out.println(cleanResults.size());
 
             class MeasurementData {
                 public double lat;
@@ -203,8 +227,7 @@ public class AirDataHandlerService {
             System.out.println("Added " + newMeasurements + " new measurements.");
 
         } catch (Exception e) {
-            // TODO: print error message
-            System.out.println(e);
+            logViaWebhook(e.toString());
         }
     }
 
@@ -222,8 +245,15 @@ public class AirDataHandlerService {
      * Return all available sensors
      */
     public List<Sensor> getSensors() {
-        List<Sensor> result = sensorRepository.findAll();
-        importDataSet();
+        List<Sensor> allSensors = sensorRepository.findAll();
+        List<Sensor> result = new ArrayList<Sensor>();
+
+        for (Sensor s : allSensors) {
+            if (s.lat >= 44 && s.lat <= 58 && s.lon >= 2 && s.lon <= 19) {
+                result.add(s);
+            }
+        }
+
         return result;
     }
 

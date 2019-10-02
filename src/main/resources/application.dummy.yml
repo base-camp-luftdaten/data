@@ -1,7 +1,5 @@
-changeable:
-  multiplierTime: 122
-  restUrl: 'http://api.luftdaten.info/static/v1/filter/type=SDS011'
-  restUrlHamburg: 'http://api.luftdaten.info/static/v1/filter/type=SDS011&country=DE&area=53.33,10.0,10'
+webhook:
+  # endpoint: 
 
 spring:
   h2:
@@ -10,7 +8,6 @@ spring:
   data:
     mongodb:
       # Mongo server host.
-      # host: basecamp-bigdata.informatik.uni-hamburg.de
       host: localhost
       # Mongo server port.
       port: 27017
