@@ -318,6 +318,16 @@ public class AirDataHandlerService {
         return response;
     }
 
+    public BySensorResponse getBySensorWithoutContinuous(String sensor, long timestamp) {
+        // retrieve all relevant measurements from the database
+        List<Measurement> allMeasurements = measurementRepository.getBySensor(sensor, timestamp);
+
+        BySensorResponse response = new BySensorResponse();
+        response.weatherReport = weatherDataService.getForecastFor(sensor, timestamp + 60 * 60 * 5);
+        response.measurement = this.bestFit(allMeasurements, timestamp);
+        return response;
+    }
+
 }
 
 class Result {

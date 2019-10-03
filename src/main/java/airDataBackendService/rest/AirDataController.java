@@ -43,4 +43,12 @@ public class AirDataController {
 
         return airDataHandlerService.getBySensor(sensor, timestamp);
     }
+
+    @GetMapping(value = "bySensorWithoutContinuous", produces = "application/json")
+    public BySensorResponse getMeasurementsBySensorWithoutContinuous(
+            @RequestParam(value = "sensor", required = true) String sensor,
+            @RequestParam(value = "timestamp", required = true) long timestamp) {
+
+        return airDataHandlerService.getBySensorWithoutContinuous(sensor, timestamp);
+    }
 }
