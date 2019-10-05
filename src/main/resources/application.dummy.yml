@@ -1,10 +1,8 @@
-webhook:
-  # endpoint: 
+secrets:
+  webhookEndpoint: ''
+  apiKey: ''
 
 spring:
-  h2:
-    console:
-      enabled: true
   data:
     mongodb:
       # Mongo server host.

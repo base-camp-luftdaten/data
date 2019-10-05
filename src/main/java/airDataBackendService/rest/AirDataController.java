@@ -1,10 +1,12 @@
 package airDataBackendService.rest;
 
+import airDataBackendService.database.Prediction;
 import airDataBackendService.database.Sensor;
 import airDataBackendService.services.AirDataHandlerService;
 import airDataBackendService.util.Location;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,5 +52,15 @@ public class AirDataController {
             @RequestParam(value = "timestamp", required = true) long timestamp) {
 
         return airDataHandlerService.getBySensorWithoutContinuous(sensor, timestamp);
+    }
+
+    @PostMapping(value = "updatePredictions")
+    public void updatePredictions(@RequestBody PredictionUpdate prediction) {
+        airDataHandlerService.updatePredictions(prediction);
+    }
+
+    @GetMapping(value = "predictions", produces = "application/json")
+    public List<Prediction> getPredictions(@RequestParam(value = "timestamp", required = true) long timestamp) {
+        return airDataHandlerService.getPredictions(timestamp);
     }
 }
