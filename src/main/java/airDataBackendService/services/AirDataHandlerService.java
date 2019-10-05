@@ -1,11 +1,14 @@
 package airDataBackendService.services;
 
 import airDataBackendService.database.Measurement;
+import airDataBackendService.database.Prediction;
 import airDataBackendService.database.Sensor;
 import airDataBackendService.repositories.MeasurementRepository;
+import airDataBackendService.repositories.PredictionRepository;
 import airDataBackendService.repositories.SensorRepository;
 import airDataBackendService.rest.AirDataAPIResult;
 import airDataBackendService.rest.BySensorResponse;
+import airDataBackendService.rest.PredictionUpdate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,8 +54,14 @@ public class AirDataHandlerService {
     @Autowired
     private MeasurementRepository measurementRepository;
 
-    @Value("${webhook.endpoint}")
+    @Autowired
+    private PredictionRepository predictionRepository;
+
+    @Value("${secrets.webhookEndpoint}")
     private String webhookUrl;
+
+    @Value("${secrets.apiKey}")
+    private String apiKey;
 
     public void logViaWebhook(String message) {
         if (webhookUrl.length() < 1) {
@@ -325,7 +334,55 @@ public class AirDataHandlerService {
         BySensorResponse response = new BySensorResponse();
         response.weatherReport = weatherDataService.getForecastFor(sensor, timestamp + 60 * 60 * 5);
         response.measurement = this.bestFit(allMeasurements, timestamp);
+
+        // check if the mesurement has been set
+        if (response.measurement.timestamp == Long.MAX_VALUE) {
+            response.measurement = null;
+        }
         return response;
+    }
+
+    /**
+     * Takes timestamp in seconds, returns timestamp in milliseconds
+     */
+    private long roundToNearestHour(long startTime) {
+        long nearestHour = (long) Math.round(startTime / 3600) * (long) 3600000;
+        if (startTime % 3600 > 1800) {
+            nearestHour += 3600000;
+        }
+
+        return nearestHour;
+    }
+
+    public void updatePredictions(PredictionUpdate pu) {
+        if (!this.apiKey.equals(pu.apiKey)) {
+            return;
+        }
+
+        String sensorID = pu.sensor;
+
+        long nearestHour = roundToNearestHour(pu.startTime);
+
+        if (pu.values.size() % 2 != 0) {
+            System.out.println("values is not a multiple of 2");
+            return;
+        }
+
+        for (int i = 0; i < pu.values.size(); i += 2) {
+            Prediction p = new Prediction();
+            p.sensor_id = sensorID;
+            p.hour = new Date(nearestHour + ((i / 2) * 3600000));
+            p.p10 = pu.values.get(i);
+            p.p25 = pu.values.get(i + 1);
+
+            predictionRepository.saveOrUpdate(p);
+        }
+    }
+
+    public List<Prediction> getPredictions(long timestamp) {
+        long nearestHour = roundToNearestHour(timestamp);
+        Date d = new Date(nearestHour);
+        return predictionRepository.findByHour(d);
     }
 
 }
