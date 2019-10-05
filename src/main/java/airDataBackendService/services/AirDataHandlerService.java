@@ -342,6 +342,24 @@ public class AirDataHandlerService {
         return response;
     }
 
+    public List<BySensorResponse> getBySensorUntilNow(String sensor, long timestamp) {
+        long nearestHour = roundToNearestHour(timestamp);
+        long now = System.currentTimeMillis();
+
+        if (nearestHour >= now) {
+            return new ArrayList<BySensorResponse>();
+        }
+
+        List<BySensorResponse> result = new ArrayList<BySensorResponse>();
+        while (nearestHour < now) {
+            BySensorResponse single = getBySensorWithoutContinuous(sensor, Math.round(nearestHour / 1000));
+            result.add(single);
+            nearestHour += 3600000;
+        }
+
+        return result;
+    }
+
     /**
      * Takes timestamp in seconds, returns timestamp in milliseconds
      */
