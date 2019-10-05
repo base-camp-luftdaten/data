@@ -375,8 +375,6 @@ public class AirDataHandlerService {
             p.p10 = pu.values.get(i);
             p.p25 = pu.values.get(i + 1);
 
-            System.out.println(p);
-
             predictionRepository.saveOrUpdate(p);
         }
     }
