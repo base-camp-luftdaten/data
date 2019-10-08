@@ -21,6 +21,11 @@ public class HeatmapRepositoryCustomImpl implements HeatmapRepositoryCustom {
   public InputStream findByFilename(String filename) {
     Query query = new Query(Criteria.where("filename").is(filename));
     GridFSFile file = gridFsTemplate.findOne(query);
+
+    if (file == null) {
+      return null;
+    }
+
     GridFsResource resource = gridFsTemplate.getResource(file);
 
     try {
