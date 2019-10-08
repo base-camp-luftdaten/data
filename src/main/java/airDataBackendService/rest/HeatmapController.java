@@ -42,7 +42,22 @@ public class HeatmapController {
   }
 
   @GetMapping("/")
-  public ResponseEntity<String> getSingleHeatmap(@RequestParam(value = "timestamp", required = true) long timestamp) {
+  public ResponseEntity<String> getSingleHeatmap(@RequestParam(value = "timestamp", required = true) long timestamp,
+      @RequestParam(value = "type", required = true) String type) {
+
+    boolean useP2 = true;
+    switch (type) {
+    case "p10":
+      useP2 = false;
+      break;
+
+    case "p25":
+      useP2 = true;
+      break;
+
+    default:
+      return ResponseEntity.status(400).body("type has to be either \"p10\" or \"p25\"");
+    }
 
     long nearestHour = Math.round(roundToNearestHour(timestamp) / 1000);
     InputStream inputStream = heatmapRepository.findByFilename("data-" + nearestHour);
@@ -53,7 +68,7 @@ public class HeatmapController {
 
     MatAccess m = new MatAccess(inputStream);
 
-    JSONArray l = m.pointArray(16, 55, 5, 47, 10000, true, false);
+    JSONArray l = m.pointArray(16, 55, 5, 47, 10000, true, useP2);
     // public JSONArray pointArray(double lonMax, -> Longitude Obergrenze
     // double latMax, -> Latitude Obergrenze
     // double lonMin, -> Longitude Untergrenze
