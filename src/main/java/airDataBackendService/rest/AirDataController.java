@@ -70,4 +70,9 @@ public class AirDataController {
     public List<Prediction> getPredictions(@RequestParam(value = "timestamp", required = true) long timestamp) {
         return airDataHandlerService.getPredictions(timestamp);
     }
+
+    @GetMapping(value = "getAllByHour", produces = "application/json")
+    public List<ByHourResult> getAllByHour(@RequestParam(value = "timestamp", required = true) long timestamp) {
+        return airDataHandlerService.getAllByHour(timestamp);
+    }
 }

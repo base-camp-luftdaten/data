@@ -7,6 +7,7 @@ import airDataBackendService.repositories.MeasurementRepository;
 import airDataBackendService.repositories.PredictionRepository;
 import airDataBackendService.repositories.SensorRepository;
 import airDataBackendService.rest.AirDataAPIResult;
+import airDataBackendService.rest.ByHourResult;
 import airDataBackendService.rest.BySensorResponse;
 import airDataBackendService.rest.PredictionUpdate;
 
@@ -25,13 +26,14 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-
+import java.util.TimeZone;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -403,6 +405,63 @@ public class AirDataHandlerService {
         return predictionRepository.findByHour(d);
     }
 
+    public List<ByHourResult> getAllByHour(long timestamp) {
+        long now = System.currentTimeMillis();
+        long nearestHour = roundToNearestHour(timestamp);
+
+        List<ByHourResult> result = new ArrayList<>();
+
+        // if timestamp is in the future
+        if (nearestHour > now) {
+            List<Prediction> predictions = getPredictions(timestamp);
+
+            for (Prediction p : predictions) {
+                Sensor s = sensorRepository.findBySensorId(p.sensor_id);
+                if (s == null) {
+                    continue;
+                }
+
+                ByHourResult bhr = new ByHourResult();
+                bhr.sensor_id = s.id;
+                bhr.lat = s.lat;
+                bhr.lon = s.lon;
+                bhr.p10 = p.p10;
+                bhr.p25 = p.p25;
+
+                result.add(bhr);
+            }
+
+            return result;
+        }
+
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        calendar.setTimeInMillis(nearestHour);
+        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0,
+                0, 0);
+        long startTimeInMillis = calendar.getTimeInMillis();
+        Date day = new Date(startTimeInMillis);
+
+        for (Sensor s : this.getSensors()) {
+            List<Measurement> measurements = measurementRepository.getBySensorSingleDay(s.id, day);
+            Measurement bestFit = this.bestFit(measurements, timestamp);
+
+            // check if the mesurement has been set
+            if (bestFit.timestamp == Long.MAX_VALUE) {
+                continue;
+            }
+
+            ByHourResult bhr = new ByHourResult();
+            bhr.sensor_id = s.id;
+            bhr.lat = s.lat;
+            bhr.lon = s.lon;
+            bhr.p10 = bestFit.p10;
+            bhr.p25 = bestFit.p25;
+
+            result.add(bhr);
+        }
+
+        return result;
+    }
 }
 
 class Result {
