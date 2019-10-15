@@ -19,7 +19,7 @@
   "homepage": "https://github.com/base-camp-luftdaten/data#readme",
   "dependencies": {
     "cheerio": "1.0.0-rc.3",
-    "csv-parse": "4.4.1",
+    "csv-parse": "4.4.6",
     "dotenv": "8.0.0",
     "mongodb": "3.2.3",
     "node-cron": "2.0.3",
