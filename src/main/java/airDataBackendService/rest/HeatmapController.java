@@ -2,26 +2,32 @@ package airDataBackendService.rest;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
-import org.json.simple.JSONArray;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import airDataBackendService.interpolation.HeatmapPoint;
 import airDataBackendService.interpolation.MatAccess;
 import airDataBackendService.repositories.HeatmapRepository;
 
-@Controller
+@RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(path = "heatmap")
 public class HeatmapController {
+
+  @Autowired
+  ObjectMapper objectMapper;
 
   @Autowired
   HeatmapRepository heatmapRepository;
@@ -41,8 +47,8 @@ public class HeatmapController {
     return nearestHour;
   }
 
-  @GetMapping("/")
-  public ResponseEntity<String> getSingleHeatmap(@RequestParam(value = "timestamp", required = true) long timestamp,
+  @GetMapping(value = "/", produces = "application/json")
+  public List<HeatmapPoint> getSingleHeatmap(@RequestParam(value = "timestamp", required = true) long timestamp,
       @RequestParam(value = "type", required = true) String type) {
 
     boolean useP2 = true;
@@ -56,7 +62,8 @@ public class HeatmapController {
       break;
 
     default:
-      return ResponseEntity.status(400).body("type has to be either \"p10\" or \"p25\"");
+      System.out.println("type has to be either \"p10\" or \"p25\"");
+      return null;
     }
 
     long nearestHour = Math.round(roundToNearestHour(timestamp) / 1000);
@@ -68,7 +75,7 @@ public class HeatmapController {
 
     MatAccess m = new MatAccess(inputStream);
 
-    JSONArray l = m.pointArray(16, 55, 5, 47, 10000, true, useP2);
+    List<HeatmapPoint> l = m.pointArray(16, 55, 5, 47, 20000, true, useP2);
     // public JSONArray pointArray(double lonMax, -> Longitude Obergrenze
     // double latMax, -> Latitude Obergrenze
     // double lonMin, -> Longitude Untergrenze
@@ -78,7 +85,8 @@ public class HeatmapController {
     // vermeiden, es können jedoch <sqrt(n)*2 Punkte dazu kommen
     // boolean P1P2) -> False: Heatmap für P1; True: Heatmap für P2
 
-    return ResponseEntity.ok().body(l.toJSONString());
+    // return ResponseEntity.ok().body(l.toJSONString());
+    return l;
   }
 
   @PostMapping("/")
