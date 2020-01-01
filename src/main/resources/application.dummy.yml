@@ -1,6 +1,6 @@
 secrets:
-  webhookEndpoint: ''
-  apiKey: 'change-me'
+  webhookEndpoint: ""
+  apiKey: "change-me"
 
 spring:
   data:
@@ -26,3 +26,11 @@ spring:
       repositories:
         # Enable Mongo repositories.
         enabled: true
+  servlet:
+    multipart:
+      max-file-size: 300MB
+      max-request-size: 300MB
+
+server:
+  tomcat:
+    max-allow-size: 300MB
